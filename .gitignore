@@ -1,0 +1,11 @@
+*.swp
+*.swo
+
+*.vvp
+*.vcd
+
+testbench.v
+*_data/
+*_tb.v
+
+*.txt
