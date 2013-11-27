@@ -28,7 +28,7 @@ Internal signal
  * Instantiate modules
  */
 // Instantiate the components in IF stage
-PC PC(
+ProgramCounter PC(
     .clk_i(clk_i),
     .rst_n(rst_n),
     .pc_in_i(pc_next),
