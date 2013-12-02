@@ -2,66 +2,70 @@
 
 module Decoder(
     instr_op_i,
-    RegWrite_o,
-    ALU_op_o,
-    ALUSrc_o,
-    RegDst_o,
-    Branch_o,
-    immed_exten
+    ALU_src2_sel_o,
+    reg_w1_addr_sel_o,
+    reg_w1_data_sel_o,
+    branch_o,
+    DM_read_o,
+    DM_write_o,
+    reg_write_o,
+    ALU_op_o
     );
 
 //I/O ports
 input  [6-1:0] instr_op_i;
 
-output         RegWrite_o;
-output [6-1:0] ALU_op_o;
-output         ALUSrc_o;
-output         RegDst_o;
-output         Branch_o;
-output         immed_exten;
+output reg         ALU_src2_sel_o;
+output reg         reg_w1_addr_sel_o;
+output reg         reg_w1_data_sel_o;
+output reg         branch_o;
+output reg         DM_read_o;
+output reg         DM_write_o;
+output reg         reg_write_o;
+output     [6-1:0] ALU_op_o;
 
 //Internal Signals
-//reg    [6-1:0] ALU_op_o;
-reg            ALUSrc_o;
-reg            RegWrite_o;
-reg            RegDst_o;
-reg            Branch_o;
-reg            immed_exten;
 
 //Parameter
 parameter CPU_OP_R_ARITHMETIC = 6'b000000, CPU_OP_ADDI = 6'b001000,
-          CPU_OP_ORI = 6'b001101, CPU_OP_BEQ = 6'b000100;
+          CPU_OP_ORI = 6'b001101, CPU_OP_BEQ = 6'b000100,
+          CPU_OP_LW = 6'b100011, CPU_OP_SW = 6'b101011;
 
-parameter ALUSRC_REG = 1'b0, ALUSRC_IMMED = 1'b1;
-parameter REGDST_RT = 1'b0, REGDST_RD = 1'b1;
-parameter SE_EXTEN = 1'b0, ZE_EXTEN = 1'b1;
+parameter ALUSRC2_REG = 1'b0, ALUSRC2_IMMED = 1'b1;
+parameter REG_W1_ADDR_RT = 1'b0, REG_W1_ADDR_RD = 1'b1;
+parameter REG_W1_DATA_ALU = 1'b0, REG_W1_DATA_DM = 1'b1;
+// parameter SE_EXTEN = 1'b0, ZE_EXTEN = 1'b1;
 
 //Main function
 assign ALU_op_o = instr_op_i;
 
 always @(*) begin
-    ALUSrc_o = 1'b1;
-    RegWrite_o = 1'b1;
-    RegDst_o = REGDST_RT;
-    Branch_o = 1'b0;
-    immed_exten = SE_EXTEN;
+    ALU_src2_sel_o = ALUSRC2_REG;
+    reg_w1_addr_sel_o = REG_W1_ADDR_RD;
+    reg_w1_data_sel_o = REG_W1_DATA_ALU;
+    branch_o = 1'b0;
+    DM_read_o = 1'b0;
+    DM_write_o = 1'b0;
+    reg_write_o = 1'b0;
 
-    if(instr_op_i == CPU_OP_R_ARITHMETIC || instr_op_i == CPU_OP_BEQ) begin
-        ALUSrc_o = ALUSRC_REG;
-    end
-    if(instr_op_i == CPU_OP_BEQ) begin
-        RegWrite_o = 1'b0;
-    end
-    if(instr_op_i == CPU_OP_R_ARITHMETIC) begin
-        RegDst_o = REGDST_RD;
-    end
-    if(instr_op_i == CPU_OP_BEQ) begin
-        Branch_o = 1'b1;
-    end
-    if(instr_op_i == CPU_OP_ORI) begin
-        immed_exten = ZE_EXTEN;
-    end
-
+    case(instr_op_i)
+        CPU_OP_ADDI, CPU_OP_LW, CPU_OP_SW: ALU_src2_sel_o = ALUSRC2_IMMED;
+    endcase
+    case(instr_op_i)
+        CPU_OP_ADDI, CPU_OP_LW: reg_w1_addr_sel_o = REG_W1_ADDR_RT;
+    endcase
+    case(instr_op_i)
+        CPU_OP_LW: reg_w1_data_sel_o = REG_W1_DATA_DM;
+    endcase
+    case(instr_op_i)
+        CPU_OP_LW: DM_read_o = 1'b1;
+    endcase
+    case(instr_op_i)
+        CPU_OP_SW: DM_write_o = 1'b1;
+    endcase
+    case(instr_op_i)
+        CPU_OP_R_ARITHMETIC, CPU_OP_ADDI, CPU_OP_LW: reg_write_o = 1'b1;
+    endcase
 end
 
 endmodule

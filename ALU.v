@@ -23,7 +23,7 @@
 
 `timescale 1ns/1ps
 
-module alu(
+module ALU(
            rst_n,         // negative reset            (input)
            src1,          // 32 bits source 1          (input)
            src2,          // 32 bits source 2          (input)

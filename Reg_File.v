@@ -11,35 +11,35 @@
 module Reg_File(
     clk_i,
     rst_n,
-    RSaddr_i,
-    RTaddr_i,
-    RDaddr_i,
-    RDdata_i,
     RegWrite_i,
-    RSdata_o,
-    RTdata_o
+    r1_addr_i,
+    r2_addr_i,
+    w1_addr_i,
+    w1_data_i,
+    r1_data_o,
+    r2_data_o
     );
 
 //I/O ports
 input           clk_i;
 input           rst_n;
 input           RegWrite_i;
-input  [5-1:0]  RSaddr_i;
-input  [5-1:0]  RTaddr_i;
-input  [5-1:0]  RDaddr_i;
-input  [32-1:0] RDdata_i;
+input  [5-1:0]  r1_addr_i;
+input  [5-1:0]  r2_addr_i;
+input  [5-1:0]  w1_addr_i;
+input  [32-1:0] w1_data_i;
 
-output [32-1:0] RSdata_o;
-output [32-1:0] RTdata_o;
+output [32-1:0] r1_data_o;
+output [32-1:0] r2_data_o;
 
 //Internal signals/registers
 reg  signed [32-1:0] Reg_File [0:32-1];     //32 word registers
-wire        [32-1:0] RSdata_o;
-wire        [32-1:0] RTdata_o;
+wire        [32-1:0] r1_data_o;
+wire        [32-1:0] r2_data_o;
 
 //Read the data
-assign RSdata_o = Reg_File[RSaddr_i] ;
-assign RTdata_o = Reg_File[RTaddr_i] ;
+assign r1_data_o = Reg_File[r1_addr_i] ;
+assign r2_data_o = Reg_File[r2_addr_i] ;
 
 //Writing data when postive edge clk_i and RegWrite_i was set.
 always @( negedge rst_n or posedge clk_i) begin
@@ -55,9 +55,9 @@ always @( negedge rst_n or posedge clk_i) begin
     end
     else begin
         if(RegWrite_i)
-            Reg_File[RDaddr_i] <= RDdata_i;
+            Reg_File[w1_addr_i] <= w1_data_i;
         else
-            Reg_File[RDaddr_i] <= Reg_File[RDaddr_i];
+            Reg_File[w1_addr_i] <= Reg_File[w1_addr_i];
     end
 end
 
