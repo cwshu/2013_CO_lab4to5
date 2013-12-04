@@ -10,7 +10,7 @@ all: ${TOPMODULE}.vvp
 	
 simulate: ${TOPMODULE}.vcd
 
-waveform: ${TOPMODULE}.vcd
+waveform:
 	gtkwave ${TOPMODULE}.vcd
 
 ${TOPMODULE}.vvp: ${TOPMODULE}.v ${TESTER} ${SUBMODULE_FILES}
@@ -22,4 +22,4 @@ ${TOPMODULE}.vcd: ${TOPMODULE}.vvp
 clean:
 	rm -f *.vvp *.vcd
 
-.PHONY: clean simulate waveform 
+.PHONY: clean simulate waveform ${TOPMODULE}.vcd
