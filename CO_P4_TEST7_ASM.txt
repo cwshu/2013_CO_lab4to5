@@ -1,0 +1,32 @@
+ADDI r0, r2,  0
+ADDI r0, r12, 1
+ADDI r0, r13, 2
+ADDI r0, r6, 20
+ADDI r0, r3,  0 
+SW   r0, r12, 0
+SW   r0, r13, 4
+; R10 for 4i, r4 for mem[i], r5 for mem[i+1]
+    BEQ r3, r6, 12  ; jump EXIT if i == c
+    LW r10, r4, 0
+    LW r10, r5, 4
+    ADDI r2, r2, 3   ; r2 += r12 + r13 + 3
+    NOP
+    ADD r4, r5, r14
+    NOP
+    ADDI r3, r3, 1   ; i++
+    ADD r2, r14, r2
+    NOP
+    ADDI r10, r10, 4 ; r10 += 4 (r10 = 4i)
+    SW r10, r2, 8    ; mem[i+2]=r2;
+    BEQ r0, r0, -13  ; jump LOOP
+ADDI r4, r4, 2
+ADDI r5, r5, 1
+
+; total cycle: 258(256)
+
+; total = m21
+; a = m19+2
+; b = m20+1
+; Memory
+; 1, 2, 6, 17, 43, 106, 258, 625, 1511, 3650, 
+; 8814, 21281, 51379, 124042, 299466, 722977, 1745423, 4213826, 10173078, 24559985, 59293051
