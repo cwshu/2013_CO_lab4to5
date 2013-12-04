@@ -17,7 +17,7 @@ wire [32-1:0] signed_ex_immed;
 // control signal
 // Decoder
 wire ALU_src2_sel, reg_w1_addr_sel, reg_w1_data_sel;
-wire pc_branch_sel;
+wire is_op_branch;
 wire DM_read, DM_write, reg_write;
 wire [6-1:0] small_instr_op;
 
@@ -38,9 +38,10 @@ wire [32-1:0] ALU_result;
 wire ALU_zero;
 wire ALU_cout;
 wire ALU_overflow;
+wire [32-1:0] branch_addr;
 // control signal
 wire EX_ALU_src2_sel, EX_reg_w1_addr_sel, EX_reg_w1_data_sel;
-wire EX_pc_branch_sel;
+wire EX_is_op_branch;
 wire EX_DM_read, EX_DM_write, EX_reg_write;
 wire [6-1:0] EX_small_instr_op;
 
@@ -51,11 +52,13 @@ wire [32-1:0] MEM_reg_r2_data;
 wire [5-1:0] MEM_reg_w1_addr;
 wire [32-1:0] MEM_ALU_result;
 wire MEM_ALU_zero;
+wire [32-1:0] MEM_branch_addr;
 
+wire is_branch;
 wire [32-1:0] DM_out;
 // control signal
 wire MEM_reg_w1_data_sel;
-wire MEM_pc_branch_sel;
+wire MEM_is_op_branch;
 wire MEM_DM_read, MEM_DM_write, MEM_reg_write;
 
 
@@ -80,7 +83,7 @@ parameter OP_S = 31, OP_E = 26, RS_S = 25, RS_E = 21, RT_S = 20, RT_E = 16, RD_S
 // control signal
 /*
     ALU_src2_sel, reg_w1_addr_sel, reg_w1_data_sel
-    pc_branch_sel
+    is_op_branch
     DM_read, DM_write, reg_write
     ALU_op
  */

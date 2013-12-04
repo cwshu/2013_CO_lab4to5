@@ -42,7 +42,7 @@ assign r1_data_o = Reg_File[r1_addr_i] ;
 assign r2_data_o = Reg_File[r2_addr_i] ;
 
 //Writing data when postive edge clk_i and RegWrite_i was set.
-always @( negedge rst_n or posedge clk_i) begin
+always @( negedge rst_n or negedge clk_i) begin
     if(rst_n == 0) begin
         Reg_File[0]  <= 0; Reg_File[1]  <= 0; Reg_File[2]  <= 0; Reg_File[3]  <= 0;
         Reg_File[4]  <= 0; Reg_File[5]  <= 0; Reg_File[6]  <= 0; Reg_File[7]  <= 0;

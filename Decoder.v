@@ -1,5 +1,6 @@
 // implemented by 0016002 舒俊維 
 
+// NOP = AND r0, r0, r0
 module Decoder(
     instr_op_i,
     ALU_src2_sel_o,
@@ -65,6 +66,9 @@ always @(*) begin
     endcase
     case(instr_op_i)
         CPU_OP_R_ARITHMETIC, CPU_OP_ADDI, CPU_OP_LW: reg_write_o = 1'b1;
+    endcase
+    case(instr_op_i)
+        CPU_OP_BEQ: branch_o = 1'b1;
     endcase
 end
 

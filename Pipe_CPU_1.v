@@ -28,6 +28,14 @@ Internal signal
  * Instantiate modules
  */
 // Instantiate the components in IF stage
+
+MUX_2to1 #(.size(32)) pc_branch_mux(
+    .select_i(is_branch),
+    .data0_i(pc_add_4),
+    .data1_i(MEM_branch_addr),
+    .data_o(pc_next)
+    );
+
 ProgramCounter PC(
     .clk_i(clk_i),
     .rst_n(rst_n),
@@ -49,6 +57,7 @@ Adder Add_pc(
         
 Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
+    .flush_i(is_branch),
     .data_i({pc_add_4, instruction}),
     .data_o({ID_pc_add_4, ID_instruction})
     );
@@ -57,9 +66,9 @@ Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
 Reg_File RF(
     .clk_i(clk_i),
     .rst_n(rst_n),
-    .RegWrite_i(is_write_reg),
-    .r1_addr_i(instruction[RS_S:RS_E]), // r1 => read1, w1 => write1
-    .r2_addr_i(instruction[RT_S:RT_E]),
+    .RegWrite_i(WB_reg_write),
+    .r1_addr_i(ID_instruction[RS_S:RS_E]), // r1 => read1, w1 => write1
+    .r2_addr_i(ID_instruction[RT_S:RT_E]),
     .w1_addr_i(WB_reg_w1_addr),
     .w1_data_i(reg_w1_data),
     .r1_data_o(reg_r1_data),
@@ -68,16 +77,16 @@ Reg_File RF(
 
 
 Sign_Extend SE_immed(
-    .data_i(instruction[IMMED_S:IMMED_E]),
+    .data_i(ID_instruction[IMMED_S:IMMED_E]),
     .data_o(signed_ex_immed)
     );    
         
 Decoder Control(
-    .instr_op_i(instruction[OP_S:OP_E]),
+    .instr_op_i(ID_instruction[OP_S:OP_E]),
     .ALU_src2_sel_o(ALU_src2_sel),
     .reg_w1_addr_sel_o(reg_w1_addr_sel),
     .reg_w1_data_sel_o(reg_w1_data_sel),
-    .branch_o(pc_branch_sel),
+    .branch_o(is_op_branch),
     .DM_read_o(DM_read),
     .DM_write_o(DM_write),
     .reg_write_o(reg_write),
@@ -86,15 +95,18 @@ Decoder Control(
 
 Pipe_Reg #(.size(157)) ID_EX(
     .clk_i(clk_i),
-    .data_i({ID_pc_add_4, instruction[RT_S:RT_E], instruction[RD_S:RD_E], instruction[FUNC_S:FUNC_E],
+    .flush_i(is_branch),
+    .data_i({ID_pc_add_4, ID_instruction[RT_S:RT_E], ID_instruction[RD_S:RD_E],
+             ID_instruction[FUNC_S:FUNC_E],
              reg_r1_data, reg_r2_data, signed_ex_immed,
              ALU_src2_sel, reg_w1_addr_sel, reg_w1_data_sel,
-             pc_branch_sel, DM_read, DM_write, reg_write, small_instr_op
+             is_op_branch, DM_read, DM_write, reg_write, small_instr_op
             }),
-    .data_o({EX_pc_add_4, EX_instruction_RT, EX_instruction_RD, EX_instruction_func, 
+    .data_o({EX_pc_add_4, EX_instruction_RT, EX_instruction_RD, 
+             EX_instruction_func, 
              EX_reg_r1_data, EX_reg_r2_data, EX_signed_ex_immed,
              EX_ALU_src2_sel, EX_reg_w1_addr_sel, EX_reg_w1_data_sel,
-             EX_pc_branch_sel, EX_DM_read, EX_DM_write, EX_reg_write, EX_small_instr_op
+             EX_is_op_branch, EX_DM_read, EX_DM_write, EX_reg_write, EX_small_instr_op
            })
     );
 //Instantiate the components in EX stage       
@@ -111,7 +123,7 @@ ALU ALU(
     );
         
 ALU_Ctrl ALU_Control(
-    .ALU_op_i(small_instr_op),
+    .ALU_op_i(EX_small_instr_op),
     .funct_i(EX_instruction_func),
     .ALU_ctrl_o(ALU_control)
     );
@@ -119,7 +131,7 @@ ALU_Ctrl ALU_Control(
 MUX_2to1 #(.size(32)) ALU_src2_mux(
     .select_i(EX_ALU_src2_sel),
     .data0_i(EX_reg_r2_data),
-    .data1_i(signed_ex_immed),
+    .data1_i(EX_signed_ex_immed),
     .data_o(ALU_src2)
     );
         
@@ -130,13 +142,17 @@ MUX_2to1 #(.size(5)) reg_w1_addr_mux(
     .data_o(reg_w1_addr)
     );
 
-Pipe_Reg #(.size(75)) EX_MEM(
-    .data_i({EX_reg_r2_data, reg_w1_addr, ALU_result, ALU_zero,
-             EX_reg_w1_data_sel, EX_pc_branch_sel,
+assign branch_addr = (EX_signed_ex_immed << 2) + EX_pc_add_4;
+
+Pipe_Reg #(.size(107)) EX_MEM(
+    .clk_i(clk_i),
+    .flush_i(is_branch),
+    .data_i({EX_reg_r2_data, reg_w1_addr, ALU_result, ALU_zero, branch_addr,
+             EX_reg_w1_data_sel, EX_is_op_branch,
              EX_DM_read, EX_DM_write, EX_reg_write
             }),
-    .data_o({MEM_reg_r2_data, MEM_reg_w1_addr, MEM_ALU_result, MEM_ALU_zero,
-             MEM_reg_w1_data_sel, MEM_pc_branch_sel,
+    .data_o({MEM_reg_r2_data, MEM_reg_w1_addr, MEM_ALU_result, MEM_ALU_zero, MEM_branch_addr,
+             MEM_reg_w1_data_sel, MEM_is_op_branch,
              MEM_DM_read, MEM_DM_write, MEM_reg_write
             })
     );
@@ -150,7 +166,15 @@ Data_Memory DM(
     .data_o(DM_out)
     );
 
+and (
+    is_branch,
+    MEM_is_op_branch,
+    MEM_ALU_zero
+    );
+
 Pipe_Reg #(.size(71)) MEM_WB(
+    .clk_i(clk_i),
+    .flush_i(1'b0),
     .data_i({MEM_reg_w1_addr, MEM_ALU_result, DM_out, MEM_reg_write, MEM_reg_w1_data_sel}),
     .data_o({WB_reg_w1_addr, WB_ALU_result, WB_DM_out, WB_reg_write, WB_reg_w1_data_sel})
     );
