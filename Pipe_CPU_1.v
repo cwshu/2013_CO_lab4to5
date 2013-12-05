@@ -57,6 +57,7 @@ Adder Add_pc(
         
 Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
+    .rst_n(rst_n),
     .flush_i(is_branch),
     .data_i({pc_add_4, instruction}),
     .data_o({ID_pc_add_4, ID_instruction})
@@ -95,6 +96,7 @@ Decoder Control(
 
 Pipe_Reg #(.size(157)) ID_EX(
     .clk_i(clk_i),
+    .rst_n(rst_n),
     .flush_i(is_branch),
     .data_i({ID_pc_add_4, ID_instruction[RT_S:RT_E], ID_instruction[RD_S:RD_E],
              ID_instruction[FUNC_S:FUNC_E],
@@ -146,6 +148,7 @@ assign branch_addr = (EX_signed_ex_immed << 2) + EX_pc_add_4;
 
 Pipe_Reg #(.size(107)) EX_MEM(
     .clk_i(clk_i),
+    .rst_n(rst_n),
     .flush_i(is_branch),
     .data_i({EX_reg_r2_data, reg_w1_addr, ALU_result, ALU_zero, branch_addr,
              EX_reg_w1_data_sel, EX_is_op_branch,
@@ -174,6 +177,7 @@ and (
 
 Pipe_Reg #(.size(71)) MEM_WB(
     .clk_i(clk_i),
+    .rst_n(rst_n),
     .flush_i(1'b0),
     .data_i({MEM_reg_w1_addr, MEM_ALU_result, DM_out, MEM_reg_write, MEM_reg_w1_data_sel}),
     .data_o({WB_reg_w1_addr, WB_ALU_result, WB_DM_out, WB_reg_write, WB_reg_w1_data_sel})
