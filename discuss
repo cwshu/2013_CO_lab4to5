@@ -1,0 +1,19 @@
+1. use parameter
+    1. CPU opcode
+    2. instruction place
+    3. internal opcode(ex. ALU)
+    好擴充/修改, 寫 code 不用記憶, 好 debug
+
+* coding style
+    1. module 參數: 每個 parameter 1 行, 空 4 格 
+
+    2. variable name
+        1. module I/O 訊號線結尾 i for input, o for output
+        2. 第一次出現的 wire/reg 直接命名, 走過 pipe register 的 output 用下階段名稱大寫開頭.
+        3. 主物件 source 的 select signal(mux select) 在結尾加上 sel. (ex. reg_w1_addr_sel)
+
+        4. reg_(ri/wi)_(addr/data) for ith read/write address/data signal
+
+    3. 字詞縮寫
+        stages: IF, ID, EX, MEM, WB
+        RF(reg_file), DM(Data Memory)
