@@ -16,7 +16,7 @@ module Decoder(
 //I/O ports
 input  [6-1:0] instr_op_i;
 
-output reg         ALU_src2_sel_o;
+output reg [2-1:0] ALU_src2_sel_o;
 output reg         reg_w1_addr_sel_o;
 output reg         reg_w1_data_sel_o;
 output reg         branch_o;
@@ -30,9 +30,10 @@ output     [6-1:0] ALU_op_o;
 //Parameter
 parameter CPU_OP_R_ARITHMETIC = 6'b000000, CPU_OP_ADDI = 6'b001000,
           CPU_OP_ORI = 6'b001101, CPU_OP_BEQ = 6'b000100,
-          CPU_OP_LW = 6'b100011, CPU_OP_SW = 6'b101011;
+          CPU_OP_LW = 6'b100011, CPU_OP_SW = 6'b101011,
+          CPU_OP_BGT = 6'b000111, CPU_OP_BNEZ = 6'b000101, CPU_OP_BGEZ = 6'b000001;
 
-parameter ALUSRC2_REG = 1'b0, ALUSRC2_IMMED = 1'b1;
+parameter ALUSRC2_REG = 2'b00, ALUSRC2_IMMED = 2'b01, ALUSRC2_0 = 2'b10;
 parameter REG_W1_ADDR_RT = 1'b0, REG_W1_ADDR_RD = 1'b1;
 parameter REG_W1_DATA_ALU = 1'b0, REG_W1_DATA_DM = 1'b1;
 // parameter SE_EXTEN = 1'b0, ZE_EXTEN = 1'b1;
@@ -51,6 +52,7 @@ always @(*) begin
 
     case(instr_op_i)
         CPU_OP_ADDI, CPU_OP_LW, CPU_OP_SW: ALU_src2_sel_o = ALUSRC2_IMMED;
+        CPU_OP_BGEZ, CPU_OP_BNEZ: ALU_src2_sel_o = ALUSRC2_0;
     endcase
     case(instr_op_i)
         CPU_OP_ADDI, CPU_OP_LW: reg_w1_addr_sel_o = REG_W1_ADDR_RT;
@@ -68,7 +70,7 @@ always @(*) begin
         CPU_OP_R_ARITHMETIC, CPU_OP_ADDI, CPU_OP_LW: reg_write_o = 1'b1;
     endcase
     case(instr_op_i)
-        CPU_OP_BEQ: branch_o = 1'b1;
+        CPU_OP_BEQ, CPU_OP_BGT, CPU_OP_BGEZ, CPU_OP_BNEZ: branch_o = 1'b1;
     endcase
 end
 

@@ -11,6 +11,7 @@
    SLL  = 4'b1000;
    SRL  = 4'b1001;
    SLT  = 4'b0111;
+   MUL  = 4'b0011;
    
    bonus_control: ALU_control = 4'b0111;
    SLT = 3'b000, 
@@ -55,7 +56,7 @@ reg             overflow;
 // opcode parameter
 parameter OP_AND = 4'b0000, OP_OR = 4'b0001, OP_ADD = 4'b0010, OP_SUB = 4'b0110,
           OP_NOR = 4'b1100, OP_NAND = 4'b1101, OP_SLT = 4'b0111,
-          OP_SLL = 4'b1000, OP_SRL = 4'b1001;
+          OP_SLL = 4'b1000, OP_SRL = 4'b1001, OP_MUL = 4'b0011;
 
 parameter OP_EX_SLT = 3'b000, OP_EX_SGT = 3'b001, OP_EX_SLE = 3'b010, OP_EX_SGE = 3'b011,
           OP_EX_SEQ = 3'b110, OP_EX_SNE = 3'b100;
@@ -157,6 +158,7 @@ always @(*) begin
             end
             OP_SLL: result = ALU_1b_res << src1;
             OP_SRL: result = ALU_1b_res >> src2;
+            OP_MUL: result = src1*src2;
         endcase
 
         zero = (result == 0);
