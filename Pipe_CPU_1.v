@@ -241,6 +241,7 @@ Data_Forwarding Data_Forwarding(
     );
 
 Load_Use_Stall Load_Use_Stall(
+    .MEM_is_branch(is_branch),
     .EX_DM_read_i(EX_DM_read),
     .EX_instruction_RD_i(reg_w1_addr),
     .ID_instruction_RS_i(ID_instruction[RS_S:RS_E]),
